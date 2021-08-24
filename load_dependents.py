@@ -8,13 +8,13 @@ import requests
 
 def get_all_dependents(
         url: str, repeat_delay: float = 1.5, min_stars: int = 5, max_pages: int = None) -> dict:
-    """Get all dependents (users) for a given GitHub repository.
+    """Get all dependents (users) for a given GitHub repository
 
     Args:
         url: URL to dependents (https://github.com/<owner>/<repository>/network/dependents)
-        repeat_delay: time to wait after every request
-        min_stars: minimum amount of stars required to include the repository in results
-        max_pages: maximum amount of page of loads
+        repeat_delay: seconds to wait after each request
+        min_stars: minimum amount of stars required to include a repository in results
+        max_pages: maximum amount of page loads, set to None for unlimited
 
     Returns:
         Repositories and star counts, sorted by star count.
@@ -54,6 +54,7 @@ def get_all_dependents(
 
     def process_results(d: dict) -> dict:
         filtered_d = {k: v for k, v in d.items() if v >= min_stars}
+        # Values in descending order
         sorted_d = sorted(filtered_d.items(), key=lambda item: -item[1])
         return dict(sorted_d)
 
@@ -84,7 +85,7 @@ def find_dependents(soup: BeautifulSoup, results: dict) -> str:
         results: results so far
 
     Returns:
-        Link to next page
+        Link to the next page
     """
     dependents = soup.select_one("#dependents")
     rows = dependents.select(".Box-row")
@@ -104,7 +105,7 @@ def find_dependents(soup: BeautifulSoup, results: dict) -> str:
     return next_link
 
 
-def main():
+def main() -> None:
     # Add target URL here:
     dependents_url = "https://github.com/<owner>/<repository>/network/dependents"
     results = get_all_dependents(dependents_url)
