@@ -4,6 +4,8 @@ A tool for finding the most starred repositories that depend on a given reposito
 
 By default, only repositories with 5 or more stars are included. 
 
+Requires Python 3.7 or later to guarantee that the results are sorted.
+
 ## Usage
 
 1. Clone the repository
