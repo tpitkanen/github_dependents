@@ -28,8 +28,15 @@ def get_all_dependents(
         if not url:
             break
 
-        r = requests.get(url)
+        try:
+            r = requests.get(url)
+        except requests.exceptions.ConnectionError as ex:
+            print(ex)
+            print("Connection error encountered, aborting.")
+            break
+
         if r.status_code == 404:
+            print(f"'{url}' returned a 404 error, aborting.")
             break
 
         soup = BeautifulSoup(r.content, features="html.parser")
