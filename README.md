@@ -6,6 +6,24 @@ By default, only repositories with 5 or more stars are included.
 
 Requires Python 3.7 or later to guarantee that the results are sorted.
 
+## Sample output
+
+Output for 10 pages of [https://github.com/numba/numba/network/dependents](https://github.com/numba/numba/network/dependents), abbreviated:
+
+```
+   5280 | https://github.com/tensorflow/examples
+   3914 | https://github.com/pycaret/pycaret
+    365 | https://github.com/alteryx/evalml
+    361 | https://github.com/ncoudray/DeepPATH
+    286 | https://github.com/interpretml/interpret-community
+    230 | https://github.com/PennyLaneAI/qml
+     92 | https://github.com/AstroMatt/book-python
+     17 | https://github.com/chanzuckerberg/single-cell-data-portal
+     12 | https://github.com/biasvariancelabs/aitlas
+     10 | https://github.com/hezhiqian01/image_retrieval
+...
+```
+
 ## Usage
 
 1. Clone the repository
@@ -23,12 +41,14 @@ env\Scripts\activate
 pip install -r requirements.txt
 ```
 
-3. Set the target URL in load_dependents.py
+3. Set the target URL and max pages in load_dependents.py
 
 ```python
 def main():
     # Add target URL here:
     dependents_url = "https://github.com/<owner>/<repository>/network/dependents"
+    # Set max pages here (result count: 30 * max_pages), 0 or None for unlimited:
+    max_pages = 100
     # ...
 ```
 

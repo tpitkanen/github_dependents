@@ -1,4 +1,3 @@
-import pprint
 import re
 import time
 
@@ -14,13 +13,14 @@ def get_all_dependents(
         url: URL to dependents (https://github.com/<owner>/<repository>/network/dependents)
         repeat_delay: seconds to wait after each request
         min_stars: minimum amount of stars required to include a repository in results
-        max_pages: maximum amount of page loads, set to None for unlimited
+        max_pages: maximum amount of page loads, set to None or 0 for unlimited
 
     Returns:
         Repositories and star counts, sorted by star count.
     """
-    if max_pages is None:
-        # A big number is close enough to unlimited
+    if not max_pages:
+        # 30*100_000 = 3_000_000 results should be enough for everything
+        # without the risk of getting stuck forever with unlimited pages.
         max_pages = 100_000
 
     results = {}
@@ -92,6 +92,7 @@ def find_dependents(soup: BeautifulSoup, results: dict) -> str:
 
     for row in rows:
         repository_link = row.find(_is_repository_link).get("href")
+        repository_link = "https://github.com" + repository_link
 
         octigon_star = row.find(_is_octicon_star)
         star_count = octigon_star.next_sibling
@@ -105,11 +106,24 @@ def find_dependents(soup: BeautifulSoup, results: dict) -> str:
     return next_link
 
 
+def print_results(results: dict) -> None:
+    """Print formatted results
+
+    Args:
+        results: results to print
+    """
+    for k, v in results.items():
+        print(f"{v:7} | {k}")
+
+
 def main() -> None:
     # Add target URL here:
     dependents_url = "https://github.com/<owner>/<repository>/network/dependents"
-    results = get_all_dependents(dependents_url)
-    pprint.pprint(results, sort_dicts=False)
+    # Set max pages here (result count: 30 * max_pages), 0 or None for unlimited:
+    max_pages = 100
+
+    results = get_all_dependents(dependents_url, max_pages=max_pages)
+    print_results(results)
 
 
 if __name__ == "__main__":
