@@ -35,8 +35,8 @@ def get_all_dependents(
             print("Connection error encountered, aborting.")
             break
 
-        if r.status_code == 404:
-            print(f"'{url}' returned a 404 error, aborting.")
+        if r.status_code >= 400:
+            print(f"'{url}' returned status code '{r.status_code}', aborting.")
             break
 
         soup = BeautifulSoup(r.content, features="html.parser")
