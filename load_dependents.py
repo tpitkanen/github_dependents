@@ -1,7 +1,7 @@
 import re
 import time
 
-from bs4 import BeautifulSoup, Tag
+import bs4
 import requests
 
 
@@ -40,7 +40,7 @@ def get_all_dependents(
             break
 
         try:
-            soup = BeautifulSoup(r.content, features="html.parser")
+            soup = bs4.BeautifulSoup(r.content, features="html.parser")
             previous_url = url
             url = find_dependents(soup, results)
         except Exception as ex:
@@ -68,20 +68,20 @@ def get_all_dependents(
 # tag.prettify() is useful for planning selectors
 
 
-def _is_repository_link(tag: Tag) -> bool:
+def _is_repository_link(tag: bs4.Tag) -> bool:
     return tag.get("data-hovercard-type") == "repository"
 
 
-def _is_octicon_star(tag: Tag) -> bool:
+def _is_octicon_star(tag: bs4.Tag) -> bool:
     class_ = tag.get("class")
     return class_ is not None and "octicon-star" in class_
 
 
-def _is_next_button(tag: Tag) -> bool:
+def _is_next_button(tag: bs4.Tag) -> bool:
     return tag.text == "Next"
 
 
-def find_dependents(soup: BeautifulSoup, results: dict) -> str:
+def find_dependents(soup: bs4.BeautifulSoup, results: dict) -> str:
     """Find dependents on a given page
 
     Args:
