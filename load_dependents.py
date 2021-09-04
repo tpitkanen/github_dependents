@@ -39,10 +39,14 @@ def get_all_dependents(
             print(f"'{url}' returned status code '{r.status_code}', aborting.")
             break
 
-        soup = BeautifulSoup(r.content, features="html.parser")
-
-        previous_url = url
-        url = find_dependents(soup, results)
+        try:
+            soup = BeautifulSoup(r.content, features="html.parser")
+            previous_url = url
+            url = find_dependents(soup, results)
+        except Exception as ex:
+            print(ex)
+            print("Error encountered while parsing page, aborting.")
+            break
 
         if _ % 10 == 0:
             print(f"Page {_} done")
