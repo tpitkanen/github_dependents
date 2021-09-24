@@ -41,19 +41,16 @@ env\Scripts\activate
 pip install -r requirements.txt
 ```
 
-3. Set the target URL and max pages in load_dependents.py
+3. Set the target URL:
 
-```python
-def main():
-    # Add target URL here:
-    dependents_url = "https://github.com/<owner>/<repository>/network/dependents"
-    # Set max pages here (result count: 30 * max_pages), 0 or None for unlimited:
-    max_pages = 100
-    # ...
+```cmd
+python load_dependents.py https://github.com/<owner>/<repository>/network/dependents
 ```
 
-4. Run the program
+## Help
 
-```
-python load_dependents.py
+For argument help, run:
+
+```cmd
+python load_dependents.py -h
 ```

@@ -1,3 +1,4 @@
+import argparse
 import re
 import time
 
@@ -6,14 +7,14 @@ import requests
 
 
 def get_all_dependents(
-        url: str, repeat_delay: float = 1.5, min_stars: int = 5, max_pages: int = None) -> dict:
+        url: str, repeat_delay: float = 1.5, max_pages: int = None, min_stars: int = 5) -> dict:
     """Get all dependents (users) for a given GitHub repository
 
     Args:
         url: URL to dependents (https://github.com/<owner>/<repository>/network/dependents)
         repeat_delay: seconds to wait after each request
-        min_stars: minimum amount of stars required to include a repository in results
         max_pages: maximum amount of page loads, set to None or 0 for unlimited
+        min_stars: minimum amount of stars required to include a repository in results
 
     Returns:
         Repositories and star counts, sorted by star count.
@@ -120,13 +121,37 @@ def print_results(results: dict) -> None:
         print(f"{v:7} | {k}")
 
 
-def main() -> None:
-    # Add target URL here:
-    dependents_url = "https://github.com/<owner>/<repository>/network/dependents"
-    # Set max pages here (result count: 30 * max_pages), 0 or None for unlimited:
-    max_pages = 100
+def parse_arguments() -> argparse.Namespace:
+    """Parse command line arguments
 
-    results = get_all_dependents(dependents_url, max_pages=max_pages)
+    Returns:
+        Arguments
+    """
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description="Get the most starred GitHub repositories depending on a given repository")
+
+    parser.add_argument(
+        "url", metavar="url", type=str,
+        help="URL to repository in the following format: https://github.com/<owner>/<repository>/network/dependents")
+    parser.add_argument(
+        "-d", "--repeat-delay", metavar="delay", type=float, default=1.5,
+        help="seconds to wait between requests")
+    parser.add_argument(
+        "-p", "--pages", metavar="pages", type=int, default=20,
+        help="maximum number of pages to load (30 dependents per page). Set to 0 for practically unlimited.")
+    parser.add_argument(
+        "-s", "--stars", metavar="stars", type=int, default=5,
+        help="minimum amount of stars required to include a repository in results")
+
+    return parser.parse_args()
+
+
+def main() -> None:
+    """Run the program and print results"""
+    args = parse_arguments()
+    results = get_all_dependents(
+        args.url, repeat_delay=args.repeat_delay, max_pages=args.pages, min_stars=args.stars)
     print_results(results)
 
 
