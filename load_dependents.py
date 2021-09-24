@@ -12,7 +12,7 @@ def get_all_dependents(
 
     Args:
         url: URL to dependents (https://github.com/<owner>/<repository>/network/dependents)
-        repeat_delay: seconds to wait after each request
+        repeat_delay: seconds to wait between requests
         max_pages: maximum amount of page loads, set to None or 0 for unlimited
         min_stars: minimum amount of stars required to include a repository in results
 
@@ -28,6 +28,8 @@ def get_all_dependents(
     for _ in range(1, max_pages + 1):
         if not url:
             break
+
+        start_time = time.time()
 
         try:
             r = requests.get(url)
@@ -55,7 +57,9 @@ def get_all_dependents(
         if url == previous_url:
             break
 
-        time.sleep(repeat_delay)
+        wait_time = repeat_delay - (time.time() - start_time)
+        if wait_time > 0:
+            time.sleep(wait_time)
 
     def process_results(d: dict) -> dict:
         filtered_d = {k: v for k, v in d.items() if v >= min_stars}
