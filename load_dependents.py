@@ -6,12 +6,16 @@ import bs4
 import requests
 
 
+class UrlError(Exception):
+    """Error in URL"""
+
+
 def get_all_dependents(
         url: str, repeat_delay: float = 1.5, max_pages: int = None) -> dict:
-    """Get all dependents (users) for a given GitHub repository
+    """Get dependents (users) for a given GitHub repository
 
     Args:
-        url: URL to dependents (https://github.com/<owner>/<repository>/network/dependents)
+        url: URL to repository (https://github.com/<owner>/<repository>)
         repeat_delay: seconds to wait between requests
         max_pages: maximum amount of page loads, set to None or 0 for unlimited
 
@@ -22,6 +26,8 @@ def get_all_dependents(
         # 30*100_000 = 3_000_000 results should be enough for everything
         # without the risk of getting stuck forever with unlimited pages.
         max_pages = 100_000
+
+    url = _build_url(url)
 
     results = {}
     for _ in range(1, max_pages + 1):
@@ -44,7 +50,7 @@ def get_all_dependents(
         try:
             soup = bs4.BeautifulSoup(r.content, features="html.parser")
             previous_url = url
-            url = find_dependents(soup, results)
+            url = parse_page(soup, results)
         except Exception as ex:
             print(ex)
             print("Error encountered while parsing page, aborting.")
@@ -63,6 +69,32 @@ def get_all_dependents(
     return results
 
 
+def _build_url(url: str) -> str:
+    """Build URL to dependents
+
+    Add "/network/dependents" to URL if it is missing.
+
+    Args:
+        url: URL to build
+
+    Raises:
+        UrlError: if URL is incorrect
+
+    Returns:
+        URL to https://github.com/<owner>/<repository>/network/dependents
+    """
+    dependents_part = "/network/dependents"
+    github_stem = "https://github.com/"
+
+    # TODO: don't require https:// at the start
+    if not url.startswith(github_stem):
+        raise UrlError(f"Unsupported URL: '{url}'")
+
+    if dependents_part not in url:
+        url = url.rstrip("/") + dependents_part
+    return url
+
+
 # tag.prettify() is useful for planning selectors
 
 
@@ -79,12 +111,12 @@ def _is_next_button(tag: bs4.Tag) -> bool:
     return tag.text == "Next"
 
 
-def find_dependents(soup: bs4.BeautifulSoup, results: dict) -> str:
-    """Find dependents on a given page
+def parse_page(soup: bs4.BeautifulSoup, results: dict) -> str:
+    """Parse dependents on a given page
 
     Args:
         soup: page in BeautifulSoup format
-        results: results so far
+        results: results so far. New dependents are added here.
 
     Returns:
         Link to the next page
@@ -146,7 +178,7 @@ def parse_arguments() -> argparse.Namespace:
 
     parser.add_argument(
         "url", metavar="url", type=str,
-        help="URL to repository in the following format: https://github.com/<owner>/<repository>/network/dependents")
+        help="URL to repository (https://github.com/<owner>/<repository>")
     parser.add_argument(
         "-d", "--repeat-delay", metavar="delay", type=float, default=1.5,
         help="seconds to wait between requests")

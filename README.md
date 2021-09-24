@@ -44,7 +44,7 @@ pip install -r requirements.txt
 3. Set the target URL:
 
 ```cmd
-python load_dependents.py https://github.com/<owner>/<repository>/network/dependents
+python load_dependents.py https://github.com/<owner>/<repository>
 ```
 
 ## Help
