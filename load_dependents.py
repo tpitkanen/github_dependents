@@ -7,14 +7,13 @@ import requests
 
 
 def get_all_dependents(
-        url: str, repeat_delay: float = 1.5, max_pages: int = None, min_stars: int = 5) -> dict:
+        url: str, repeat_delay: float = 1.5, max_pages: int = None) -> dict:
     """Get all dependents (users) for a given GitHub repository
 
     Args:
         url: URL to dependents (https://github.com/<owner>/<repository>/network/dependents)
         repeat_delay: seconds to wait between requests
         max_pages: maximum amount of page loads, set to None or 0 for unlimited
-        min_stars: minimum amount of stars required to include a repository in results
 
     Returns:
         Repositories and star counts, sorted by star count.
@@ -61,13 +60,7 @@ def get_all_dependents(
         if wait_time > 0:
             time.sleep(wait_time)
 
-    def process_results(d: dict) -> dict:
-        filtered_d = {k: v for k, v in d.items() if v >= min_stars}
-        # Values in descending order
-        sorted_d = sorted(filtered_d.items(), key=lambda item: -item[1])
-        return dict(sorted_d)
-
-    return process_results(results)
+    return results
 
 
 # tag.prettify() is useful for planning selectors
@@ -115,6 +108,22 @@ def find_dependents(soup: bs4.BeautifulSoup, results: dict) -> str:
     return next_link
 
 
+def process_results(results: dict, min_stars: int = 5) -> dict:
+    """Sort and filer results
+
+    Args:
+        results: results to process
+        min_stars: minimum amount of stars required to include a repository in results
+
+    Returns:
+        Processed results
+    """
+    filtered_d = {k: v for k, v in results.items() if v >= min_stars}
+    # Values in descending order
+    sorted_d = dict(sorted(filtered_d.items(), key=lambda item: -item[1]))
+    return sorted_d
+
+
 def print_results(results: dict) -> None:
     """Print formatted results
 
@@ -155,7 +164,8 @@ def main() -> None:
     """Run the program and print results"""
     args = parse_arguments()
     results = get_all_dependents(
-        args.url, repeat_delay=args.repeat_delay, max_pages=args.pages, min_stars=args.stars)
+        args.url, repeat_delay=args.repeat_delay, max_pages=args.pages)
+    results = process_results(results, min_stars=args.stars)
     print_results(results)
 
 
